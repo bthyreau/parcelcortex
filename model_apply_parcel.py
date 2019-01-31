@@ -6,7 +6,6 @@ import sys, os, time
 
 import nibabel
 import numpy as np
-import scipy.ndimage
 import theano
 import theano.tensor as T
 
