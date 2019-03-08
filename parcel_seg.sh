@@ -13,11 +13,14 @@ while (( "$#" )); do
         -d) DEBUG=1;;
         -h) echo "Usage  : $0 [ -n ] [ -a X ] [ -c N ] [ -t X ] input_segmentation.nii
 
-Options: -c N : extract label N and use that for input, useful if the input is a label map.
-         -a X : use atlas X, where X is one of: aseg a2009 apals. Default to all
-         -n   : skip the internal registration step, useful if the input is already aligned to MNI space
-         -t X : threshold the input segmentation at X instead of 0.5 when creating the final cortical label map.
-         -d   : debug - keep all temporary files"
+Options:
+ -c N : extract label N and use it for input, useful if the input is a labelmap.
+ -a X : use atlas X, where X is one of: aseg a2009 apals. Default to all
+ -n   : skip the internal registration step, useful if the input is already
+        aligned to MNI space.
+ -t X : threshold the input segmentation at X instead of 0.5 when creating the
+        final cortical label map and counting region volumes.
+ -d   : debug - keep all temporary files."
         exit;;
         -*) echo "unexpected option $1"; exit;;
          *) if [ "$filename" != "" ] ; then echo "unexpected argument $1"; exit; fi; filename=$1;;
