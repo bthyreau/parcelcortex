@@ -121,7 +121,7 @@ if len(sys.argv) > 1:
 
     T = time.time()
     for atlas in atlas_list:
-        print("Using atlas %s" % atlas)
+        print("Applying model for atlas %s" % atlas)
         for fname in [fnamel, fnamel.replace("_lout_", "_rout_")]:
             img = nibabel.load(fname)
 
@@ -133,11 +133,11 @@ if len(sys.argv) > 1:
                 d_orr = d_orr[::-1]
                 side_hint = side_hint[::-1]
 
-            print("Starting inference on %s using atlas %s" % (fname, atlas))
+            #print("Starting inference on %s using atlas %s" % (fname, atlas))
             atlas_code, nb_roi = atlas_codes[atlas]
             d_orr[~roi] = 0
             out1 = getout(d_orr[None,None], [atlas_code], [side_hint])
-            print("Inference " + str(time.time() - T))
+            #print("Inference " + str(time.time() - T))
 
             a=np.argmax(out1[:,:nb_roi], axis=1) + 1
             a[out1[:,:nb_roi].max(axis=1) < .001] = 0 # mostly for debug
