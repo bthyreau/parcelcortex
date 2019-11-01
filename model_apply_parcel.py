@@ -126,6 +126,8 @@ if len(sys.argv) > 1:
             img = nibabel.load(fname)
 
             d = img.get_data().astype(np.float32)
+            if d.max() > 10:
+                d /= 255. # d is probably uchar encoded
             d_orr = d
             side_hint = [1, 0]
 
