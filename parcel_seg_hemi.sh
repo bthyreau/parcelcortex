@@ -66,10 +66,11 @@ THEANO_FLAGS="device=cpu,floatX=float32,compile.wait=1" python $scriptpath/model
 for atlas in $atlas_list; do
     antsApplyTransforms -i b96_box128_rout_${a}_outlab_${atlas}_filled.nii.gz -r ${a1} -o Lout_${a}_${atlas}_filled.nii -t [ ${a}_mni0Affine.txt,1] -n NearestNeighbor --float
     antsApplyTransforms -i b96_box128_lout_${a}_outlab_${atlas}_filled.nii.gz -r ${a1} -o Rout_${a}_${atlas}_filled.nii -t [ ${a}_mni0Affine.txt,1] -n NearestNeighbor --float
-    python $scriptpath/post_assemble_hemi.py ${a}_ribbonL.nii.gz ${a}_ribbonR.nii.gz Lout_${a}_${atlas}_filled.nii Rout_${a}_${atlas}_filled.nii ${a}_labelled_${atlas}.nii.gz $atlas ${seg_threshold:-"92"}
+    #python $scriptpath/post_assemble_hemi.py ${a}_ribbonL.nii.gz ${a}_ribbonR.nii.gz Lout_${a}_${atlas}_filled.nii Rout_${a}_${atlas}_filled.nii ${a}_labelled_${atlas}.nii.gz $atlas ${seg_threshold:-"92"}
+    python $scriptpath/post_assemble_hemi_with_thickness.py ${a}_ribbonL.nii.gz ${a}_ribbonR.nii.gz Lout_${a}_${atlas}_filled.nii Rout_${a}_${atlas}_filled.nii ${a}_labelled_${atlas}.nii.gz $atlas ${seg_threshold:-"92"}
 done
 
 
 rm b96_box128_[rl]out_${a}*.nii.gz
 # Those are the non-masked labels:
-## rm Lout_${a}_*_filled.nii Rout_${a}_*_filled.nii
+rm Lout_${a}_*_filled.nii Rout_${a}_*_filled.nii
