@@ -20,6 +20,8 @@ img = nibabel.load(segfile_fn_R)
 mask = img.get_data() > float(seg_threshold)
 mR = nibabel.load(Rout_fn).get_data().astype(np.uint8)
 
+labout[mask] = mR[mask]
+
 nibabel.Nifti1Image(labout, img.affine, img.header).to_filename(out_fn)
 
 if atlas == "aseg":
@@ -31,7 +33,7 @@ elif atlas == "a2009":
 elif atlas == "pals":
     name_d = {1: 'Brodmann.1', 2: 'Brodmann.2', 3: 'Brodmann.3', 4: 'Brodmann.4', 5: 'Brodmann.5', 6: 'Brodmann.6', 7: 'Brodmann.7', 8: 'Brodmann.8', 9: 'Brodmann.9', 10: 'Brodmann.10', 11: 'Brodmann.11', 17: 'Brodmann.17', 18: 'Brodmann.18', 19: 'Brodmann.19', 20: 'Brodmann.20', 21: 'Brodmann.21', 22: 'Brodmann.22', 23: 'Brodmann.23', 24: 'Brodmann.24', 25: 'Brodmann.25', 26: 'Brodmann.26', 27: 'Brodmann.27', 28: 'Brodmann.28', 29: 'Brodmann.29', 30: 'Brodmann.30', 31: 'Brodmann.31', 32: 'Brodmann.32', 33: 'Brodmann.33', 35: 'Brodmann.35', 36: 'Brodmann.36', 37: 'Brodmann.37', 38: 'Brodmann.38', 39: 'Brodmann.39', 40: 'Brodmann.40', 41: 'Brodmann.41', 42: 'Brodmann.42', 43: 'Brodmann.43', 44: 'Brodmann.44', 45: 'Brodmann.45', 46: 'Brodmann.46', 47: 'Brodmann.47'}
 
-labout[mask] = mR[mask] + 100
+labout[mask] += 100
 
 voxvol = np.abs(np.linalg.det(img.affine))
 label_sum = scipy.ndimage.sum(np.ones(labout.shape), labels = labout, index = range(200)) * voxvol
