@@ -106,7 +106,7 @@ else:
     getout = pickle.load(open(cachefile,"rb"))
 
 atlas_codes = {"a2009": ([1,0,0], 75), "aseg": ([0, 1, 0], 35), "pals": ([0, 0, 1], 48)}
-hemi_template_file = os.path.dirname(os.path.realpath(__file__)) + "/templates/dil_ig_ribbon_ig_b96_box128_lout_T1_thr.nii.gz"
+hemi_template_file = os.path.dirname(os.path.realpath(__file__)) + "/templates/hemi_mask.nii.gz"
 roi = nibabel.load(hemi_template_file).get_data() > .5
 
 if len(sys.argv) > 1:
@@ -127,7 +127,7 @@ if len(sys.argv) > 1:
 
             d = img.get_data().astype(np.float32)
             if d.max() > 10:
-                d /= 255. # d is probably uchar encoded
+                d /= 255. # d is probably uchar
             d_orr = d
             side_hint = [1, 0]
 
