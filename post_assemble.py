@@ -23,7 +23,7 @@ bL = np.array(scipy.ndimage.center_of_mass(mL[::2,::2,::2])) * 2
 bR = np.array(scipy.ndimage.center_of_mass(mR[::2,::2,::2])) * 2
 ijk = np.array(np.where(mR & mL))
 sideL = np.dot( (ijk.T - ((bR+bL)/2.)) , (bR-bL) ) < 0
-ijk = [x[sideL] for x in ijk]
+ijk = tuple([x[sideL] for x in ijk])
 mask[ijk] = 0
 
 labout[mask] = mR[mask]
