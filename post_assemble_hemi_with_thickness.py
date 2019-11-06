@@ -61,7 +61,7 @@ elif atlas == "pals":
 # (useful if the segmentation is made of continuous [0-1] values)
 
 with open(out_fn.replace(".nii.gz", "_metrics.txt"), "w") as h:
-    h.write("label,side,region_name,vol,weighted_vol,thickness_mean\n")
+    h.write("label,side,region_name,vol,weighted_vol,thickness_mean,thickness_var\n")
     for idx in sorted(name_d.keys()):
         h.write("%d,L,%s,%.2f,%.2f,%.3f,%.3f\n" % (idx, name_d[idx], label_sumL[idx], label_weightedsumL[idx], label_thickmeanL[idx], label_thickvarL[idx]))
     for idx in sorted(name_d.keys()):
