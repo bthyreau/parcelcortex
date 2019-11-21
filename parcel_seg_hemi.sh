@@ -45,9 +45,15 @@ fi
 # In this script, matrix filenames are hardcoded .txt files, but it should also work
 # with mat files. Unfortunately, ANTs use the filename suffix to detect the format,
 # so a trivial rename of ${a}0GenericAffine.mat to ${a}_mni0Affine.txt will not work
+suffix_mat="txt"
 if [ ! -f ${a}_mni0Affine.txt ]; then
-	echo "ANTs-compatible MNI Affine transformation file not found (should be named ${a}_mni0Affine.txt)"
-    exit 1;
+    if [ -f ${a}_mni0Affine.mat ]; then
+	    echo "ANTs-compatible MNI Affine transformation file found as .mat file (${a}_mni0Affine.mat). Using it."
+        suffix_mat="mat"
+    else
+	    echo "ANTs-compatible MNI Affine transformation file not found (should be named ${a}_mni0Affine.txt)"
+        exit 1;
+    fi
 fi
 
 atlas_list=${ATLAS:-"a2009 aseg pals"}
@@ -55,22 +61,22 @@ atlas_list=${ATLAS:-"a2009 aseg pals"}
 
 
 
-antsApplyTransforms -i ${a}_ribbonR.nii.gz -t ${a}_mni0Affine.txt -r ${scriptpath}/templates/dil_ig_ribbon_ig_b96_box128_lout_T1_thr.nii.gz -o b96_box128_lout_${a}.nii.gz --float -n Gaussian
+antsApplyTransforms -i ${a}_ribbonR.nii.gz -t ${a}_mni0Affine.$suffix_mat -r ${scriptpath}/templates/dil_ig_ribbon_ig_b96_box128_lout_T1_thr.nii.gz -o b96_box128_lout_${a}.nii.gz --float -n Gaussian
 
-antsApplyTransforms -i ${a}_ribbonL.nii.gz -t ${a}_mni0Affine.txt -r ${scriptpath}/templates/dil_ig_ribbon_ig_b96_box128_rout_T1_thr.nii.gz -o b96_box128_rout_${a}.nii.gz --float -n Gaussian
+antsApplyTransforms -i ${a}_ribbonL.nii.gz -t ${a}_mni0Affine.$suffix_mat -r ${scriptpath}/templates/dil_ig_ribbon_ig_b96_box128_rout_T1_thr.nii.gz -o b96_box128_rout_${a}.nii.gz --float -n Gaussian
 
 
 THEANO_FLAGS="device=cpu,floatX=float32,compile.wait=1" python $scriptpath/model_apply_parcel.py b96_box128_lout_${a}.nii.gz $atlas_list
 
 
 for atlas in $atlas_list; do
-    antsApplyTransforms -i b96_box128_rout_${a}_outlab_${atlas}_filled.nii.gz -r ${a1} -o Lout_${a}_${atlas}_filled.nii -t [ ${a}_mni0Affine.txt,1] -n NearestNeighbor --float
-    antsApplyTransforms -i b96_box128_lout_${a}_outlab_${atlas}_filled.nii.gz -r ${a1} -o Rout_${a}_${atlas}_filled.nii -t [ ${a}_mni0Affine.txt,1] -n NearestNeighbor --float
-    #python $scriptpath/post_assemble_hemi.py ${a}_ribbonL.nii.gz ${a}_ribbonR.nii.gz Lout_${a}_${atlas}_filled.nii Rout_${a}_${atlas}_filled.nii ${a}_labelled_${atlas}.nii.gz $atlas ${seg_threshold:-"92"}
-    python $scriptpath/post_assemble_hemi_with_thickness.py ${a}_ribbonL.nii.gz ${a}_ribbonR.nii.gz Lout_${a}_${atlas}_filled.nii Rout_${a}_${atlas}_filled.nii ${a}_labelled_${atlas}.nii.gz $atlas ${seg_threshold:-"92"}
+    antsApplyTransforms -i b96_box128_rout_${a}_outlab_${atlas}_filled.nii.gz -r ${a1} -o Lout_${a}_${atlas}_filled.nii -t [ ${a}_mni0Affine.$suffix_mat,1] -n NearestNeighbor --float
+    antsApplyTransforms -i b96_box128_lout_${a}_outlab_${atlas}_filled.nii.gz -r ${a1} -o Rout_${a}_${atlas}_filled.nii -t [ ${a}_mni0Affine.$suffix_mat,1] -n NearestNeighbor --float
+    python $scriptpath/post_assemble_hemi.py ${a}_ribbonL.nii.gz ${a}_ribbonR.nii.gz Lout_${a}_${atlas}_filled.nii Rout_${a}_${atlas}_filled.nii ${a}_labelled_${atlas}.nii.gz $atlas ${seg_threshold:-"92"}
+    #python $scriptpath/post_assemble_hemi_with_thickness.py ${a}_ribbonL.nii.gz ${a}_ribbonR.nii.gz Lout_${a}_${atlas}_filled.nii Rout_${a}_${atlas}_filled.nii ${a}_labelled_${atlas}.nii.gz $atlas ${seg_threshold:-"92"}
 done
 
 
 rm b96_box128_[rl]out_${a}*.nii.gz
 # Those are the non-masked labels:
-rm Lout_${a}_*_filled.nii Rout_${a}_*_filled.nii
+#rm Lout_${a}_*_filled.nii Rout_${a}_*_filled.nii
