@@ -8,15 +8,17 @@ while (( "$#" )); do
         case $1 in
         -a) shift; ATLAS=$1;;
         -t) shift; seg_threshold=$1;;
+        -LR) SHIFT_RIGHT_LABELS="1";;
         -h) echo "Usage  : $0 [ -a X ] [ -t X ] input_segmentation.nii
 
  where input_segmentation_ribbon{R,L}.nii.gz exist containing a single hemi,
- and an ANTs-compatible matrix to MNI space.
+ and input_segmentation_mni0Affine.mat (or .txt) an ANTs-compatible matrix to MNI space.
 
 Options:
  -a X : use atlas X, where X is one of: aseg a2009 apals. Default to all
  -t X : threshold the input segmentation at X instead of 92 when creating the
-        final cortical label map and counting region volumes."
+        final cortical label map and counting region volumes.
+ -LR  : Separate Left and Right in the final labelmap (Right codes shifted +100)"
         exit;;
         -*) echo "unexpected option $1"; exit;;
          *) if [ "$filename" != "" ] ; then echo "unexpected argument $1"; exit; fi; filename=$1;;
@@ -72,8 +74,8 @@ THEANO_FLAGS="device=cpu,floatX=float32,compile.wait=1" python $scriptpath/model
 for atlas in $atlas_list; do
     antsApplyTransforms -i b96_box128_rout_${a}_outlab_${atlas}_filled.nii.gz -r ${a1} -o Lout_${a}_${atlas}_filled.nii -t [ ${a}_mni0Affine.$suffix_mat,1] -n NearestNeighbor --float
     antsApplyTransforms -i b96_box128_lout_${a}_outlab_${atlas}_filled.nii.gz -r ${a1} -o Rout_${a}_${atlas}_filled.nii -t [ ${a}_mni0Affine.$suffix_mat,1] -n NearestNeighbor --float
-    python $scriptpath/post_assemble_hemi.py ${a}_ribbonL.nii.gz ${a}_ribbonR.nii.gz Lout_${a}_${atlas}_filled.nii Rout_${a}_${atlas}_filled.nii ${a}_labelled_${atlas}.nii.gz $atlas ${seg_threshold:-"92"}
-    #python $scriptpath/post_assemble_hemi_with_thickness.py ${a}_ribbonL.nii.gz ${a}_ribbonR.nii.gz Lout_${a}_${atlas}_filled.nii Rout_${a}_${atlas}_filled.nii ${a}_labelled_${atlas}.nii.gz $atlas ${seg_threshold:-"92"}
+    python $scriptpath/post_assemble_hemi.py ${a}_ribbonL.nii.gz ${a}_ribbonR.nii.gz Lout_${a}_${atlas}_filled.nii Rout_${a}_${atlas}_filled.nii ${a}_labelled_${atlas}.nii.gz $atlas ${seg_threshold:-"92"} ${SHIFT_RIGHT_LABELS:-"0"}
+    #python $scriptpath/post_assemble_hemi_with_thickness.py ${a}_ribbonL.nii.gz ${a}_ribbonR.nii.gz Lout_${a}_${atlas}_filled.nii Rout_${a}_${atlas}_filled.nii ${a}_labelled_${atlas}.nii.gz $atlas ${seg_threshold:-"92"} ${SHIFT_RIGHT_LABELS:-"0"}
 done
 
 

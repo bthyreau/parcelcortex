@@ -3,7 +3,7 @@ import numpy as np
 import sys
 import scipy.ndimage
 
-segfile_fn_L, segfile_fn_R, Lout_fn, Rout_fn, out_fn, atlas, seg_threshold = sys.argv[1:]
+segfile_fn_L, segfile_fn_R, Lout_fn, Rout_fn, out_fn, atlas, seg_threshold, shift_right_labels = sys.argv[1:]
 
 
 
@@ -46,7 +46,10 @@ labout = np.zeros(img.shape, np.uint8)
 mask = ribbon > float(seg_threshold)
 m = nibabel.load(Rout_fn).get_data().astype(np.uint8)
 labout[mask] = m[mask]
-outimg[mask] = m[mask]
+if shift_right_labels == "0":
+    outimg[mask] = m[mask]
+else:
+    outimg[mask] = m[mask] + 100
 label_sumR = scipy.ndimage.sum(np.ones(labout.shape), labels = labout, index = range(100)) * voxvol
 
 ribbon = np.clip((ribbon - 32) * 1.59375, 0, 255) # smoothly rescale 32 ~ 192 to 0 ~ 255
