@@ -8,19 +8,26 @@ segfile_fn_L, segfile_fn_R, Lout_fn, Rout_fn, out_fn, atlas, seg_threshold = sys
 
 
 img = nibabel.load(segfile_fn_L)
-voxvol = np.abs(np.linalg.det(img.affine))
+ribbon = img.get_data()
 
-if img.get_data().max() < 2:
-    print("WARNING: This script is intended for hemi encoded as 0-255")
+if ribbon.max() < 2:
+    print("Warning: this script is intended for ribbon containing 0~255 probabilistic masks. Continue assuming 0~1 masks")
+    ribbon *= 255 # in this case ribbon was not uint8 anymore anyway
+
+voxvol = np.abs(np.linalg.det(img.affine))
 
 labout = np.zeros(img.shape, np.uint8)
 
-mask = img.get_data() > float(seg_threshold)
+mask = ribbon > float(seg_threshold)
 m = nibabel.load(Lout_fn).get_data().astype(np.uint8)
 labout[mask] = m[mask]
 outimg = labout.copy()
 label_sumL = scipy.ndimage.sum(np.ones(labout.shape), labels = labout, index = range(100)) * voxvol
-label_weightedsumL = scipy.ndimage.sum(img.get_data(), labels = labout, index = range(100)) * voxvol / 255.
+
+ribbon = np.clip((ribbon - 32) * 1.59375, 0, 255) # smoothly rescale 32 ~ 192 to 0 ~ 255
+label_weightedsumL = scipy.ndimage.sum(ribbon, labels = labout, index = range(100)) * voxvol / 255.
+
+
 thicknessL = nibabel.load(segfile_fn_L.replace("_ribbon", "_thickness")).get_data()
 labout[thicknessL == 0] = 0 # do not include voxels where there is no thickness data
 label_thickmeanL = np.nan_to_num(scipy.ndimage.mean(thicknessL, labels = labout, index = range(100)))
@@ -28,16 +35,23 @@ label_thickvarL = np.nan_to_num(scipy.ndimage.variance(thicknessL, labels = labo
 
 
 
+
 img = nibabel.load(segfile_fn_R)
+ribbon = img.get_data()
+if ribbon.max() < 2:
+    ribbon *= 255 # in this case ribbon was not uint8 anymore anyway
 
 labout = np.zeros(img.shape, np.uint8)
 
-mask = img.get_data() > float(seg_threshold)
+mask = ribbon > float(seg_threshold)
 m = nibabel.load(Rout_fn).get_data().astype(np.uint8)
 labout[mask] = m[mask]
 outimg[mask] = m[mask]
 label_sumR = scipy.ndimage.sum(np.ones(labout.shape), labels = labout, index = range(100)) * voxvol
-label_weightedsumR = scipy.ndimage.sum(img.get_data(), labels = labout, index = range(100)) * voxvol / 255.
+
+ribbon = np.clip((ribbon - 32) * 1.59375, 0, 255) # smoothly rescale 32 ~ 192 to 0 ~ 255
+label_weightedsumR = scipy.ndimage.sum(ribbon, labels = labout, index = range(100)) * voxvol / 255.
+
 thicknessR = nibabel.load(segfile_fn_R.replace("_ribbon", "_thickness")).get_data()
 labout[thicknessR == 0] = 0 # do not include voxels where there is no thickness data
 label_thickmeanR = np.nan_to_num(scipy.ndimage.mean(thicknessR, labels = labout, index = range(100)))
