@@ -9,15 +9,16 @@ while (( "$#" )); do
         -a) shift; ATLAS=$1;;
         -t) shift; seg_threshold=$1;;
         -LR) SHIFT_RIGHT_LABELS="1";;
-        -h) echo "Usage  : $0 [ -a X ] [ -t X ] input_segmentation.nii
+        -h) echo "Usage  : $0 [ -a X ] [ -t X ] input_segmentation
 
- where input_segmentation_ribbon{R,L}.nii.gz exist containing a single hemi,
- and input_segmentation_mni0Affine.mat (or .txt) an ANTs-compatible matrix to MNI space.
+ where input_segmentation is a prefix such that:
+  input_segmentation_ribbon{R,L}.nii.gz exist containing a single hemi each,
+  and input_segmentation_mni0Affine.mat (or .txt) an ANTs-compatible matrix to MNI space.
 
 Options:
  -a X : use atlas X, where X is one of: aseg a2009 apals. Default to all
  -t X : threshold the input segmentation at X instead of 92 when creating the
-        final cortical label map and counting region volumes.
+        final cortical label map and counting region volumes. (0 to 255)
  -LR  : Separate Left and Right in the final labelmap (Right codes shifted +100)"
         exit;;
         -*) echo "unexpected option $1"; exit;;
@@ -29,12 +30,8 @@ done
 which antsApplyTransforms > /dev/null
 if [ $? -eq "1" ]; then echo "ANTs scripts not in path"; exit; fi
 
-if [ ! -f "$filename" ]; then echo "input file not found $filename"; exit; fi
 
-# try to drop a few differents suffix names
 a=$(basename $filename)
-a1=$a
-for suffix in gz nii img hdr mgz mgh; do a=$(basename $a .$suffix); done
 pth=$(dirname $filename)
 cd $pth
 
@@ -72,8 +69,8 @@ THEANO_FLAGS="device=cpu,floatX=float32,compile.wait=1" python $scriptpath/model
 
 
 for atlas in $atlas_list; do
-    antsApplyTransforms -i b96_box128_rout_${a}_outlab_${atlas}_filled.nii.gz -r ${a1} -o Lout_${a}_${atlas}_filled.nii -t [ ${a}_mni0Affine.$suffix_mat,1] -n NearestNeighbor --float
-    antsApplyTransforms -i b96_box128_lout_${a}_outlab_${atlas}_filled.nii.gz -r ${a1} -o Rout_${a}_${atlas}_filled.nii -t [ ${a}_mni0Affine.$suffix_mat,1] -n NearestNeighbor --float
+    antsApplyTransforms -i b96_box128_rout_${a}_outlab_${atlas}_filled.nii.gz -r ${a}_ribbonL.nii.gz -o Lout_${a}_${atlas}_filled.nii -t [ ${a}_mni0Affine.$suffix_mat,1] -n NearestNeighbor --float
+    antsApplyTransforms -i b96_box128_lout_${a}_outlab_${atlas}_filled.nii.gz -r ${a}_ribbonR.nii.gz -o Rout_${a}_${atlas}_filled.nii -t [ ${a}_mni0Affine.$suffix_mat,1] -n NearestNeighbor --float
     python $scriptpath/post_assemble_hemi.py ${a}_ribbonL.nii.gz ${a}_ribbonR.nii.gz Lout_${a}_${atlas}_filled.nii Rout_${a}_${atlas}_filled.nii ${a}_labelled_${atlas}.nii.gz $atlas ${seg_threshold:-"92"} ${SHIFT_RIGHT_LABELS:-"0"}
     #python $scriptpath/post_assemble_hemi_with_thickness.py ${a}_ribbonL.nii.gz ${a}_ribbonR.nii.gz Lout_${a}_${atlas}_filled.nii Rout_${a}_${atlas}_filled.nii ${a}_labelled_${atlas}.nii.gz $atlas ${seg_threshold:-"92"} ${SHIFT_RIGHT_LABELS:-"0"}
 done
@@ -82,3 +79,4 @@ done
 rm b96_box128_[rl]out_${a}*.nii.gz
 # Those are the non-masked labels:
 #rm Lout_${a}_*_filled.nii Rout_${a}_*_filled.nii
+gzip -f -3 Lout_${a}_*_filled.nii ; gzip -f -3 Rout_${a}_*_filled.nii
