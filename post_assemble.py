@@ -27,6 +27,7 @@ ijk = tuple([x[sideL] for x in ijk])
 mask[ijk] = 0
 
 labout[mask] = mR[mask]
+nibabel.openers.Opener.default_compresslevel = 9
 nibabel.Nifti1Image(labout, img.affine, img.header).to_filename(out_fn)
 
 if atlas == "aseg":
