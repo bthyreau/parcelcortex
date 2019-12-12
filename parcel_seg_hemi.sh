@@ -79,4 +79,4 @@ done
 rm b96_box128_[rl]out_${a}*.nii.gz
 # Those are the non-masked labels:
 #rm Lout_${a}_*_filled.nii Rout_${a}_*_filled.nii
-gzip -f -3 Lout_${a}_*_filled.nii ; gzip -f -3 Rout_${a}_*_filled.nii
+gzip -f Lout_${a}_*_filled.nii ; gzip -f Rout_${a}_*_filled.nii

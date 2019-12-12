@@ -50,6 +50,7 @@ ribbon = np.clip((ribbon - 32) * 1.59375, 0, 255) # smoothly rescale 32 ~ 192 to
 label_weightedsumR = scipy.ndimage.sum(ribbon, labels = labout, index = range(100)) * voxvol / 255.
 
 
+nibabel.openers.Opener.default_compresslevel = 9
 nibabel.Nifti1Image(outimg, img.affine, img.header).to_filename(out_fn)
 del outimg
 

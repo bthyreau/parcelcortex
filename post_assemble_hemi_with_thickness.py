@@ -60,6 +60,7 @@ labout[thicknessR == 0] = 0 # do not include voxels where there is no thickness 
 label_thickmeanR = np.nan_to_num(scipy.ndimage.mean(thicknessR, labels = labout, index = range(100)))
 label_thickvarR = np.nan_to_num(scipy.ndimage.variance(thicknessR, labels = labout, index = range(100)))
 
+nibabel.openers.Opener.default_compresslevel = 9
 nibabel.Nifti1Image(outimg, img.affine, img.header).to_filename(out_fn)
 del outimg
 
