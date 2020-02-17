@@ -65,8 +65,7 @@ antsApplyTransforms -i ${a}_ribbonR.nii.gz -t ${a}_mni0Affine.$suffix_mat -r ${s
 
 antsApplyTransforms -i ${a}_ribbonL.nii.gz -t ${a}_mni0Affine.$suffix_mat -r ${scriptpath}/templates/dil_ig_ribbon_ig_b96_box128_rout_T1_thr.nii.gz -o b96_box128_rout_${a}.nii.gz --float -n Gaussian
 
-
-THEANO_FLAGS="device=cpu,floatX=float32,compile.wait=1" python $scriptpath/model_apply_parcel.py b96_box128_lout_${a}.nii.gz $atlas_list
+python $scriptpath/model_apply_parcel.py b96_box128_lout_${a}.nii.gz $atlas_list
 
 
 for atlas in $atlas_list; do
