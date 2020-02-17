@@ -1,109 +1,135 @@
-from __future__ import print_function
-
-from lasagne.layers import get_output, InputLayer, DenseLayer, ReshapeLayer, NonlinearityLayer
-from lasagne.nonlinearities import rectify, leaky_rectify
-import sys, os, time
-
+import torch
 import nibabel
 import numpy as np
-import theano
-import theano.tensor as T
+import os, sys, time
+import torch.nn as nn
+import torch.nn.functional as F
+from numpy.linalg import inv
 
-import lasagne
 
-# Note that Conv3DLayer and .Conv3DLayer have opposite filter-fliping defaults
-from lasagne.layers import Conv3DLayer, MaxPool3DLayer
-from lasagne.layers import Upscale3DLayer
 
-from lasagne.layers import *
+class ParcelCortexModel(nn.Module):
+    def __init__(self):
+        super(ParcelCortexModel, self).__init__()
+        self.conv0a_0 = l = nn.Conv3d(1, 16, (1,1,3), padding=(0,0,1))
+        self.conv0a_1 = l = nn.Conv3d(16, 16, (1,3,1), padding=(0,1,0))
+        l = self.conv0a_2 = nn.Conv3d(16, 16, (3,1,1), padding=(1,0,0))
+        l = self.bn0 = nn.BatchNorm3d(16, momentum=1, eps=1e-8)
+        l.training = False
 
-import pickle
-import theano.misc.pkl_utils
+        self.maxpool1 = nn.MaxPool3d(2)
+        l = self.convf1 = nn.Conv3d(16, 32, (3,3,3), padding=1)
+        l = self.bn1 = nn.BatchNorm3d(32, momentum=1, eps=1e-8)
+        l.training = False
 
-cachefile = os.path.dirname(os.path.realpath(__file__)) + "/model_cached.pkl"
+        l = self.convout2r = nn.Conv3d(32, 96, 1, padding=0)
+        self.maxpool2 = nn.MaxPool3d(2)
+        l = self.convout2 = nn.Conv3d(96, 96, (3,3,3), padding=1)
+        l = self.bn2 = nn.BatchNorm3d(96, momentum=1, eps=1e-8)
+        l.training = False
 
-if not os.path.exists(cachefile):
-    l_input = InputLayer(shape = (None, 1, 48, 96, 96), name="input")
-    l_input_atlas = InputLayer(shape = (None, 3), name="input_atlas")
-    l_input_side = InputLayer(shape = (None, 2), name="input_side")
+        l = self.convout3r = nn.Conv3d(96, 128, 1, padding=0)
+        self.maxpool3 = nn.MaxPool3d(2)
+        l = self.convout3p = nn.Conv3d(128, 96, (3,3,3), padding=1)
+        l = self.convout3 = nn.Conv3d(96, 128, 1, padding=0)
+        l = self.bn3 = nn.BatchNorm3d(128, momentum=1, eps=1e-8)
+        l.training = False
+        self.maxpool3 = nn.MaxPool3d(2)
+                
+        l = self.convlx4 = nn.Conv3d(133, 128, (3,3,3), padding=1)
+        l = self.convout4r = nn.Conv3d(128, 128, 1, padding=0)
+        l = self.bn4 = nn.BatchNorm3d(128, momentum=1, eps=1e-8)
+        l.training = False
 
-    l_atlas_hint = Upscale3DLayer(ReshapeLayer(l_input_atlas, ([0], [1], 1,1,1)), scale_factor = (3,6,6), name="upscale")
-    l_side_hint = Upscale3DLayer(ReshapeLayer(l_input_side, ([0], [1], 1,1,1)), scale_factor = (3,6,6), name="upscale")
+        l = self.convlx5 = nn.Conv3d(128, 128, (3,3,3), padding=1)
+        l = self.convout5r = nn.Conv3d(128, 128, 1, padding=0)
+        l = self.bn5 = nn.BatchNorm3d(128, momentum=1, eps=1e-8)
+        l.training = False
 
-    l = l_input
-    l = Conv3DLayer(l, num_filters = 16, filter_size = (1,1,3), pad = 'same', name="conv")
-    l = Conv3DLayer(l, num_filters = 16, filter_size = (1,3,1), pad = 'same', name="conv")
-    l = Conv3DLayer(l, num_filters = 16, filter_size = (3,1,1), pad = 'same', name="conv")
-    l = batch_norm(l)
-    li0 = l 
+        l = self.convlx6 = nn.Conv3d(128, 96, (3,3,3), padding=1)
+        l = self.convout6r = nn.Conv3d(96+96, 96, 1, padding=0)
+        l = self.bn6 = nn.BatchNorm3d(96, momentum=1, eps=1e-8)
+        l.training = False
+        
+        l = self.convlx7 = nn.Conv3d(96, 96, (3,3,3), padding=1)
+        l = self.convout7r = nn.Conv3d(96+32, 96, 1, padding=0)
+        l = self.bn7 = nn.BatchNorm3d(96, momentum=1, eps=1e-8)
+        l.training = False
 
-    l = MaxPool3DLayer(l, pool_size = 2, name ='maxpool')
-    l = Conv3DLayer(l, num_filters = 32, filter_size = (3,3,3), pad = 'same', name="conv")
-    l = batch_norm(l)
-    li1 = l
-    l = Conv3DLayer(l, num_filters = 96, filter_size = 1, pad = 'same', name="conv")
+        self.conv8a_0 = l = nn.Conv3d(96, 96, (1,1,3), padding=(0,0,1))
+        self.conv8a_1 = l = nn.Conv3d(96, 96, (1,3,1), padding=(0,1,0))
+        l = self.conv8a_2 = nn.Conv3d(96, 96, (3,1,1), padding=(1,0,0))
+        l = self.convlx8 = nn.Conv3d(96+16, 75, 1, padding=0)
 
-    l = MaxPool3DLayer(l, pool_size = 2, name ='maxpool')
-    l = Conv3DLayer(l, num_filters = 96, filter_size = (3,3,3), pad = 'same', name="conv")
-    l = batch_norm(l)
-    li2 = l 
-    l = Conv3DLayer(l, num_filters = 128, filter_size = 1, pad = 'same', name ='conv')
+    def forward(self, x, atlas_hint, side_hint):
+        x = F.relu(self.conv0a_0(x))
+        x = F.relu(self.conv0a_1(x))
+        x = self.conv0a_2(x)
+        x = F.relu(self.bn0(x))
+        li0 = x
 
-    l = MaxPool3DLayer(l, pool_size = 2, name ='maxpool')
-    l = Conv3DLayer(l, num_filters = 96, filter_size = (3,3,3), pad = 'same', name="conv")
-    l = Conv3DLayer(l, num_filters = 128, filter_size = 1, pad = 'same', name ='conv')
-    l = batch_norm(l)
+        x = self.maxpool1(x)
+        x = self.convf1(x)
+        x = F.relu(self.bn1(x))
+        li1 = x
+        
+        x = F.relu(self.convout2r(x))
+        x = self.maxpool2(x)
+        x = self.convout2(x)
+        x = F.relu(self.bn2(x))
+        li2 = x
+        
+        x = F.relu(self.convout3r(x))
+        x = self.maxpool3(x)
+        x = F.relu(self.convout3p(x))
+        x = self.convout3(x)
+        x = F.relu(self.bn3(x))
+        x = self.maxpool3(x)
+        
+        atlas_hint = F.interpolate(atlas_hint[...,None,None,None], (3,6,6), mode="nearest")
+        side_hint = F.interpolate(side_hint[...,None,None,None], (3,6,6), mode="nearest")
+        x = torch.cat([x, atlas_hint, side_hint], dim=1)
 
-    l = MaxPool3DLayer(l, pool_size = 2, name ='maxpool')
-    l = ConcatLayer([l, l_atlas_hint, l_side_hint])
-    l = Conv3DLayer(l, num_filters = 128, filter_size = (3,3,3), pad = 'same', name="conv")
-    l = Conv3DLayer(l, num_filters = 128, filter_size = 1, pad = 'same', name ='conv')
-    l = batch_norm(l)
-    l_middle = l
-    l = Upscale3DLayer(l, scale_factor = 2, name="upscale")
-    l = Conv3DLayer(l, num_filters = 128, filter_size = (3,3,3), pad = 'same', name="conv")
-    l = Conv3DLayer(l, num_filters = 128, filter_size = 1, pad = 'same', name ='conv')
-    l = batch_norm(l)
+        x = F.relu(self.convlx4(x))
+        x = (self.convout4r(x))
+        x = F.relu(self.bn4(x))
+    
+        x = F.interpolate(x, scale_factor=2, mode="nearest")
+        x = F.relu(self.convlx5(x))
+        x = (self.convout5r(x))
+        x = F.relu(self.bn5(x))
+        
+        x = F.interpolate(x, scale_factor=2, mode="nearest")
+        x = F.relu(self.convlx6(x))
+        x = torch.cat([x, li2], dim=1)
+        x = (self.convout6r(x))
+        x = F.relu(self.bn6(x))
 
-    l = Upscale3DLayer(l, scale_factor = 2, name="upscale")
-    l = Conv3DLayer(l, num_filters = 96, filter_size = (3,3,3), pad = 'same', name="conv")
-    l = ConcatLayer([l, li2])
-    l = Conv3DLayer(l, num_filters = 96, filter_size = 1, pad = 'same', name ='conv')
-    l = batch_norm(l)
+    
+        x = F.interpolate(x, scale_factor=2, mode="nearest")
+        x = F.relu(self.convlx7(x))
+        x = torch.cat([x, li1], dim=1)
+        x = (self.convout7r(x))
+        x = F.relu(self.bn7(x))
 
-    l = Upscale3DLayer(l, scale_factor = 2, name="upscale")
-    l = Conv3DLayer(l, num_filters = 96, filter_size = (3,3,3), pad = 'same', name="conv")
-    l = ConcatLayer([l, li1])
-    l = Conv3DLayer(l, num_filters = 96, filter_size = 1, pad = 'same', name ='conv')
-    l = batch_norm(l)
+    
+        x = F.interpolate(x, scale_factor=2, mode="nearest")
+        x = F.relu(self.conv8a_0(x))
+        x = F.relu(self.conv8a_1(x))
+        x = F.relu(self.conv8a_2(x))
 
-    l = Upscale3DLayer(l, scale_factor = 2, name="upscale")
-    l = Conv3DLayer(l, num_filters = 96, filter_size = (1,1,3), pad = 'same', name="conv")
-    l = Conv3DLayer(l, num_filters = 96, filter_size = (1,3,1), pad = 'same', name="conv")
-    l = Conv3DLayer(l, num_filters = 96, filter_size = (3,1,1), pad = 'same', name="conv")
-    l = ConcatLayer([l, li0])
+        x = torch.cat([x, li0], dim=1)
+        x = self.convlx8(x)
+        x = torch.sigmoid(x)
+        return x
 
-    l = Conv3DLayer(l, num_filters = 75, filter_size = 1, pad = "same", name="conv1x", nonlinearity = lasagne.nonlinearities.sigmoid )
-    lastl = l
-    network = l
+net = ParcelCortexModel()
+net.eval()
+# os.path.dirname(os.path.realpath(__file__)) + "/parcelcortex.pt")
 
-    def reload_fn(fn):
-        with np.load(fn) as f:
-            param_values = [f['arr_%d' % i] for i in range(len(f.files))]
-        lasagne.layers.set_all_param_values(lastl, param_values)
+net.load_state_dict(torch.load(os.path.dirname(os.path.realpath(__file__)) + "/parcelcortex.pt"))
 
-    reload_fn(os.path.dirname(os.path.realpath(__file__)) + "/params_parcel.npz")
 
-    print("Compiling")
-
-    getout = theano.function([l_input.input_var, l_input_atlas.input_var, l_input_side.input_var], lasagne.layers.get_output(lastl, deterministic=True))
-
-    print("Pickling")
-    pickle.dump(getout, open(cachefile, "wb"))
-
-else:
-    print("Loading from cache")
-    getout = pickle.load(open(cachefile,"rb"))
 
 atlas_codes = {"a2009": ([1,0,0], 75), "aseg": ([0, 1, 0], 35), "pals": ([0, 0, 1], 48)}
 hemi_template_file = os.path.dirname(os.path.realpath(__file__)) + "/templates/dil_ig_ribbon_ig_b96_box128_lout_T1_thr.nii.gz"
@@ -132,15 +158,16 @@ if len(sys.argv) > 1:
             side_hint = [1, 0]
 
             if "_rout_" in fname:
-                d_orr = d_orr[::-1]
+                d_orr = d_orr[::-1].copy() # copy because pytorch fail at negative strides
                 side_hint = side_hint[::-1]
 
             #print("Starting inference on %s using atlas %s" % (fname, atlas))
             atlas_code, nb_roi = atlas_codes[atlas]
             d_orr[~roi] = 0
-            out1 = getout(d_orr[None,None], [atlas_code], [side_hint])
+            with torch.no_grad():
+                out1 = net(torch.Tensor(d_orr[None,None]), torch.Tensor([atlas_code]), torch.Tensor([side_hint]))
             #print("Inference " + str(time.time() - T))
-
+            out1 = np.asarray(out1)
             a=np.argmax(out1[:,:nb_roi], axis=1) + 1
             a[out1[:,:nb_roi].max(axis=1) < .001] = 0 # mostly for debug
             outt = a[0].astype(np.uint8)
