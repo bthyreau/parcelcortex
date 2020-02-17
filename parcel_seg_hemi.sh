@@ -30,6 +30,7 @@ done
 which antsApplyTransforms > /dev/null
 if [ $? -eq "1" ]; then echo "ANTs scripts not in path"; exit; fi
 
+if [ "$filename" == "" ]; then echo "Use -h option for usage"; exit; fi
 
 a=$(basename $filename)
 pth=$(dirname $filename)
