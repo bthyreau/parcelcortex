@@ -11,27 +11,29 @@ The regions follow one of the Desikan-Killiany (DK), Destrieux 2009, or PALS_Bro
 
 
 This is based on the methods described in the manuscript *Learning a cortical parcellation of the
-brain robust to the MRI segmentation with convolutional neural networks* (under review). It contains background information and more.
+brain robust to the MRI segmentation with convolutional neural networks* ( https://doi.org/10.1016/j.media.2020.101639 ). It contains background information and more.
 
+This version is a direct PyTorch port of the model originally developed and trained on the (now unmaintained) Theano framework. The theano-based inference code is still available in the "theano" git branch of this repository. Both version use the same parameters and should give identical results.
 
 ## Installation
-The code uses numpy and Theano, and relies on ANTs.
+This code uses pytorch, and relies on ANTs.
 No GPU is required.
 
-To setup a ANTs environment, get it from http://stnava.github.io/ANTs/ (or alternatively, from a docker container such as http://www.mindboggle.info/ ). The 2.1.0 binaries are known to work.
+To setup a ANTs environment, get it from http://stnava.github.io/ANTs/ (or alternatively, from a docker container). The 2.1.0 binaries are known to work.
 
-The simplest way to install the rest from scratch is to use a Anaconda environment, then
-* install scipy and Theano >=0.9.0 (`conda install theano`) (no need for CUDA/GPU-related packages if asked)
-* nibabel is available on pip (`pip install nibabel`)
-* Lasagne (version >=0.2 If still not available, it should be probably pulled from the github repo `pip install --upgrade https://github.com/Lasagne/Lasagne/archive/master.zip`)
+The simplest way to install the rest from scratch is to use a Anaconda or virtualenv environment using Python >3.5, then
+* install numpy, scipy, if not installed (`conda install scipy` or `pip install scipy`)
+* install nibabel, available on pip (`pip install nibabel`)
+* install pytorch ( > 1.0.0, tested until 1.4.0 ) following the instruction of https://pytorch.org (CPU only is ok, no need for CUDA/GPU-related dependencies)
+
 
 
 ## Usage:
 After download, you can run
 
-`./first_run.sh` in the source directory to ensure the environment is ok and to pre-compile the models.
+`./test_run.sh` in the source directory to ensure the environment is ok.
 
-Then, to use the program, simply run:
+To use the program, simply run:
 
 `./parcel_seg.sh -a aseg example/example_segmentation_t1.nii.gz`.
 
