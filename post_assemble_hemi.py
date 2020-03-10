@@ -51,7 +51,7 @@ label_weightedsumR = scipy.ndimage.sum(ribbon, labels = labout, index = range(10
 
 
 nibabel.openers.Opener.default_compresslevel = 9
-nibabel.Nifti1Image(outimg, img.affine, img.header).to_filename(out_fn)
+nibabel.Nifti1Image(outimg, img.affine).to_filename(out_fn)
 del outimg
 
 
