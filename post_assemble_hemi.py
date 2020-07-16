@@ -8,7 +8,7 @@ segfile_fn_L, segfile_fn_R, Lout_fn, Rout_fn, out_fn, atlas, seg_threshold, shif
 
 
 img = nibabel.load(segfile_fn_L)
-ribbon = img.get_data()
+ribbon = np.asarray(img.dataobj)
 
 if ribbon.max() < 2:
     print("Warning: this script is intended for ribbon containing 0~255 probabilistic masks. Continue assuming 0~1 masks")
@@ -19,7 +19,7 @@ voxvol = np.abs(np.linalg.det(img.affine))
 labout = np.zeros(img.shape, np.uint8)
 
 mask = ribbon > float(seg_threshold)
-m = nibabel.load(Lout_fn).get_data().astype(np.uint8)
+m = nibabel.load(Lout_fn).get_fdata(caching="unchanged").astype(np.uint8)
 labout[mask] = m[mask]
 outimg = labout.copy()
 label_sumL = scipy.ndimage.sum(np.ones(labout.shape), labels = labout, index = range(100)) * voxvol
@@ -31,14 +31,14 @@ label_weightedsumL = scipy.ndimage.sum(ribbon, labels = labout, index = range(10
 
 
 img = nibabel.load(segfile_fn_R)
-ribbon = img.get_data()
+ribbon = np.asarray(img.dataobj)
 if ribbon.max() < 2:
     ribbon *= 255 # in this case ribbon was not uint8 anymore anyway
 
 labout = np.zeros(img.shape, np.uint8)
 
 mask = ribbon > float(seg_threshold)
-m = nibabel.load(Rout_fn).get_data().astype(np.uint8)
+m = nibabel.load(Rout_fn).get_fdata(caching="unchanged").astype(np.uint8)
 labout[mask] = m[mask]
 if shift_right_labels == "0":
     outimg[mask] = m[mask]
