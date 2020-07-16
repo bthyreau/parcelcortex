@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from numpy.linalg import inv
 
-device = torch.device("cuda:0")
+device = torch.device("cpu")
 
 class ParcelCortexModel(nn.Module):
     def __init__(self):
