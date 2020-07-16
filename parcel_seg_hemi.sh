@@ -67,7 +67,6 @@ antsApplyTransforms -i ${a}_ribbonL.nii.gz -t ${a}_mni0Affine.$suffix_mat -r ${s
 
 python $scriptpath/model_apply_parcel.py b96_box128_lout_${a}.nii.gz $atlas_list
 
-
 for atlas in $atlas_list; do
     antsApplyTransforms -i b96_box128_rout_${a}_outlab_${atlas}_filled.nii.gz -r ${a}_ribbonL.nii.gz -o Lout_${a}_${atlas}_filled.nii -t [ ${a}_mni0Affine.$suffix_mat,1] -n NearestNeighbor --float
     antsApplyTransforms -i b96_box128_lout_${a}_outlab_${atlas}_filled.nii.gz -r ${a}_ribbonR.nii.gz -o Rout_${a}_${atlas}_filled.nii -t [ ${a}_mni0Affine.$suffix_mat,1] -n NearestNeighbor --float

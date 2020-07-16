@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from numpy.linalg import inv
 
-
+device = torch.device("cpu")
 
 class ParcelCortexModel(nn.Module):
     def __init__(self):
@@ -124,6 +124,7 @@ class ParcelCortexModel(nn.Module):
         return x
 
 net = ParcelCortexModel()
+net.to(device)
 net.eval()
 # os.path.dirname(os.path.realpath(__file__)) + "/parcelcortex.pt")
 
@@ -151,7 +152,7 @@ if len(sys.argv) > 1:
         for fname in [fnamel, fnamel.replace("_lout_", "_rout_")]:
             img = nibabel.load(fname)
 
-            d = img.get_data().astype(np.float32)
+            d = img.get_fdata(caching="unchanged", dtype=np.float32)
             if d.max() > 10:
                 d /= 255. # d is probably uchar encoded
             d_orr = d
@@ -165,7 +166,9 @@ if len(sys.argv) > 1:
             atlas_code, nb_roi = atlas_codes[atlas]
             d_orr[~roi] = 0
             with torch.no_grad():
-                out1 = net(torch.Tensor(d_orr[None,None]), torch.Tensor([atlas_code]), torch.Tensor([side_hint]))
+                out1 = net( torch.as_tensor(d_orr[None,None], device=device),
+                            torch.as_tensor([atlas_code], dtype=torch.float32, device=device),
+                            torch.as_tensor([side_hint], dtype=torch.float32, device=device) ).to("cpu")
             #print("Inference " + str(time.time() - T))
             out1 = np.asarray(out1)
             a=np.argmax(out1[:,:nb_roi], axis=1) + 1
