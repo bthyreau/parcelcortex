@@ -4,6 +4,8 @@ This program quickly labels the human brain cortical regions, from a pre-segment
 
 The input can be a probabilistic (e.g. SPM c1/wc1 images) or a boolean mask (e.g. FSL and other).
 
+For convenience, the program can also be run directly on a T1-weighted images.
+
 The regions follow one of the Desikan-Killiany (DK), Destrieux 2009, or PALS_Brodman definition, originally defined on the surface.
 
 
@@ -16,8 +18,21 @@ brain robust to the MRI segmentation with convolutional neural networks* ( https
 This version is a direct PyTorch port of the model originally developed and trained on the (now unmaintained) Theano framework. The theano-based inference code is still available in the "theano" git branch of this repository. Both version use the same parameters and should give identical results.
 
 ## Installation
-This code uses pytorch, and relies on ANTs.
+This code uses pytorch, and relies on ANTs for some features.
 No GPU is required.
+
+Quickstart:
+
+if you have `uv` installed:
+
+`git clone https://github.com/bthyreau/parcelcortex.git`
+`cd parcelcortex`
+`uv sync`
+`parcel_t1mri.sh example_brain_t1.nii.gz`
+
+Where `example_brain_t1.nii.gz` is a 3D T1-weighted image
+Uses `parcel_t1mri.sh -h` for help
+
 
 To setup a ANTs environment, get it from http://stnava.github.io/ANTs/ (or alternatively, from a docker container). The 2.1.0 binaries are known to work.
 
