@@ -38,7 +38,7 @@ a=$(basename $a .mgh)
 pth=$(dirname $filename)
 
 which antsApplyTransforms > /dev/null
-if [ $? -eq "1" ]; then echo "ANTs scripts not in path"; exit; fi
+if [ $? -eq "1" ]; then echo "ANTs scripts not in path. You need antsApplyTransforms in your PATH"; exit; fi
 
 
 cd $pth
