@@ -25,10 +25,12 @@ Quickstart:
 
 if you have `uv` installed:
 
-`git clone https://github.com/bthyreau/parcelcortex.git`
-`cd parcelcortex`
-`uv sync`
-`parcel_t1mri.sh example_brain_t1.nii.gz`
+```
+git clone https://github.com/bthyreau/parcelcortex.git
+cd parcelcortex
+uv sync
+parcel_t1mri.sh example/example_brain_t1.nii.gz
+```
 
 Where `example_brain_t1.nii.gz` is a 3D T1-weighted image
 Try `parcel_t1mri.sh -h` for help

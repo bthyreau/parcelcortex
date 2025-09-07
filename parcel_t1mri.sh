@@ -55,8 +55,8 @@ cd $pth
 #fi
 
 # Note that the segmentation model can work with both affine and rigid registrations input
-antsApplyTransforms -i ${ba} -r ${scriptpath}/igboxL.nii.gz -t ${a}_mni0Affine.txt -o ${a}_boxL.nii.gz -u float
-antsApplyTransforms -i ${ba} -r ${scriptpath}/igboxR.nii.gz -t ${a}_mni0Affine.txt -o ${a}_boxR.nii.gz -u float
+antsApplyTransforms -i ${ba} -r ${scriptpath}/templates/igboxL.nii.gz -t ${a}_mni0Affine.txt -o ${a}_boxL.nii.gz -u float
+antsApplyTransforms -i ${ba} -r ${scriptpath}/templates/igboxR.nii.gz -t ${a}_mni0Affine.txt -o ${a}_boxR.nii.gz -u float
 
 python3 $scriptpath/apply_seg3.py ${a}_boxL.nii.gz
 
