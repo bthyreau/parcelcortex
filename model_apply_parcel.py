@@ -133,7 +133,7 @@ net.load_state_dict(torch.load(os.path.dirname(os.path.realpath(__file__)) + "/p
 
 atlas_codes = {"a2009": ([1,0,0], 75), "aseg": ([0, 1, 0], 35), "pals": ([0, 0, 1], 48)}
 hemi_template_file = os.path.dirname(os.path.realpath(__file__)) + "/templates/dil_ig_ribbon_ig_b96_box128_lout_T1_thr.nii.gz"
-roi = nibabel.load(hemi_template_file).get_data() > .5
+roi = nibabel.load(hemi_template_file).get_fdata() > .5
 
 if len(sys.argv) > 1:
     fnamel = sys.argv[1]
@@ -151,7 +151,7 @@ if len(sys.argv) > 1:
         for fname in [fnamel, fnamel.replace("_lout_", "_rout_")]:
             img = nibabel.load(fname)
 
-            d = img.get_data().astype(np.float32)
+            d = img.get_fdata(dtype=np.float32)
             if d.max() > 10:
                 d /= 255. # d is probably uchar encoded
             d_orr = d

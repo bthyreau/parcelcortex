@@ -1,4 +1,7 @@
 #!/bin/bash
+r0=$(realpath $0)
+PATH=$(dirname $r0)/.venv/bin/:$(dirname $r0)/venv/bin/:$PATH
+
 export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 
@@ -72,12 +75,12 @@ antsApplyTransforms -i ${a1} -t aff_${a}0GenericAffine.mat -r ${scriptpath}/temp
 
 antsApplyTransforms -i ${a1} -t aff_${a}0GenericAffine.mat -r ${scriptpath}/templates/dil_ig_ribbon_ig_b96_box128_rout_T1_thr.nii.gz -o b96_box128_rout_${a}.nii.gz --float -n Gaussian
 
-python $scriptpath/model_apply_parcel.py b96_box128_lout_${a}.nii.gz $atlas_list
+python3 $scriptpath/model_apply_parcel.py b96_box128_lout_${a}.nii.gz $atlas_list
 
 for atlas in $atlas_list; do
     antsApplyTransforms -i b96_box128_rout_${a}_outlab_${atlas}_filled.nii.gz -r ${a1} -o Lout_${a}_${atlas}_filled.nii -t [aff_${a}0GenericAffine.mat,1] -n NearestNeighbor --float
     antsApplyTransforms -i b96_box128_lout_${a}_outlab_${atlas}_filled.nii.gz -r ${a1} -o Rout_${a}_${atlas}_filled.nii -t [aff_${a}0GenericAffine.mat,1] -n NearestNeighbor --float
-    python $scriptpath/post_assemble.py ${a1} Lout_${a}_${atlas}_filled.nii Rout_${a}_${atlas}_filled.nii ${a}_labelled_${atlas}.nii.gz $atlas ${seg_threshold:-".5"}
+    python3 $scriptpath/post_assemble.py ${a1} Lout_${a}_${atlas}_filled.nii Rout_${a}_${atlas}_filled.nii ${a}_labelled_${atlas}.nii.gz $atlas ${seg_threshold:-".5"}
 done
 
 if [ $DEBUG ]; then

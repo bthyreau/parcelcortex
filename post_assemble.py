@@ -6,10 +6,10 @@ import scipy.ndimage
 segfile_fn, Lout_fn, Rout_fn, out_fn, atlas, seg_threshold = sys.argv[1:]
 
 img = nibabel.load(segfile_fn)
-mask = img.get_data() > float(seg_threshold) # adjust for each segmentation (or related MR contrast), default .5
+mask = img.get_fdata() > float(seg_threshold) # adjust for each segmentation (or related MR contrast), default .5
 
-mL = nibabel.load(Lout_fn).get_data().astype(np.uint8)
-mR = nibabel.load(Rout_fn).get_data().astype(np.uint8)
+mL = nibabel.load(Lout_fn).get_fdata().astype(np.uint8)
+mR = nibabel.load(Rout_fn).get_fdata().astype(np.uint8)
 
 labout = np.zeros(img.shape, np.uint8)
 
@@ -43,7 +43,7 @@ labout[mask] = mR[mask] + 100
 
 voxvol = np.abs(np.linalg.det(img.affine))
 label_sum = scipy.ndimage.sum(np.ones(labout.shape), labels = labout, index = range(200)) * voxvol
-label_weightedsum = scipy.ndimage.sum(img.get_data(), labels = labout, index = range(200)) * voxvol
+label_weightedsum = scipy.ndimage.sum(img.get_fdata(), labels = labout, index = range(200)) * voxvol
 
 # vol is the region volume; weighted_vol is the region volume weighted by the tissue volume
 # (useful if the segmentation is made of continuous [0-1] values)
