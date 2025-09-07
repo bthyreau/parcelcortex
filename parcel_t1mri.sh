@@ -37,9 +37,14 @@ a=$(basename $a .mgz)
 a=$(basename $a .mgh)
 pth=$(dirname $filename)
 
-which antsApplyTransforms > /dev/null
-if [ $? -eq "1" ]; then echo "ANTs scripts not in path. You need antsApplyTransforms in your PATH"; exit; fi
 
+which antsApplyTransforms > /dev/null
+if [ $? -eq "1" ]; then  
+  echo "ANTs antsApplyTransforms not found in PATH, using bundled copy"
+  PATH=$PATH:"$(dirname $r0)/bin" # fallback antsApplyTransforms
+  which antsApplyTransforms > /dev/null
+  if [ $? -eq "1" ]; then echo "Failed to run bundled copy. You need antsApplyTransforms in your PATH to run this script"; exit; fi
+fi
 
 cd $pth
 

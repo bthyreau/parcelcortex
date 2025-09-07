@@ -1,0 +1,8 @@
+#!/bin/bash
+# A quick & dirty wrapper around copied binaries to emulate a real call to antsApplyTransform
+if [ $(uname -s) == "Linux" ] ; then
+ antsApplyTransforms.lnx2.6 $@
+else
+ antsApplyTransforms.mach64 $@
+fi
+
