@@ -4,7 +4,7 @@ PATH=$(dirname $r0)/.venv/bin/:$(dirname $r0)/venv/bin/:$PATH
 export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=4
 export OPENBLAS_NUM_THREADS=1
 
-scriptpath=$(dirname $0); [ "${0:0:1}" != '/' ] && scriptpath="$PWD/$scriptpath"
+scriptpath=$(dirname $r0)
 
 while (( "$#" )); do
         case $1 in

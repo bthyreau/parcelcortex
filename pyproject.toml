@@ -13,8 +13,6 @@ dependencies = [
 [python.pip]
 extra-index-urls = ["https://download.pytorch.org/whl/cpu"]
 
-#[project.scripts]
-#hippodeep = "hippodeep:main"
 
 [[tool.uv.index]]
 name = "pytorch-cpu"

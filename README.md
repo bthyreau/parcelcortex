@@ -29,12 +29,14 @@ if you have `uv` installed:
 git clone https://github.com/bthyreau/parcelcortex.git
 cd parcelcortex
 uv sync
-parcel_t1mri.sh example/example_brain_t1.nii.gz
+./parcel_t1mri.sh example/example_brain_t1.nii.gz
 ```
 
 Where `example_brain_t1.nii.gz` is a 3D T1-weighted image
+
 Try `parcel_t1mri.sh -h` for help
-It is possible to symlink `parcel_t1mri.sh` anywhere in the PATH
+
+It is possible to symlink `parcel_t1mri.sh` from somehere in your PATH
 
 
 Otherwise, to setup a ANTs environment, get it from http://stnava.github.io/ANTs/ (or alternatively, from a docker container). The 2.1.0+ binaries are known to work.
