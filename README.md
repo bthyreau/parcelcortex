@@ -4,7 +4,7 @@ This program quickly labels the human brain cortical regions, from a pre-segment
 
 The input can be a probabilistic (e.g. SPM c1/wc1 images) or a boolean mask (e.g. FSL and other).
 
-For convenience, the program can also be run directly on a T1-weighted images.
+**(Update 2025)** For user-convenience, the program can also be run directly on a raw T1-weighted images.
 
 The regions follow one of the Desikan-Killiany (DK), Destrieux 2009, or PALS_Brodman definition, originally defined on the surface.
 
@@ -37,12 +37,12 @@ Try `parcel_t1mri.sh -h` for help
 It is possible to symlink `parcel_t1mri.sh` anywhere in the PATH
 
 
-To setup a ANTs environment, get it from http://stnava.github.io/ANTs/ (or alternatively, from a docker container). The 2.1.0 binaries are known to work.
+Otherwise, to setup a ANTs environment, get it from http://stnava.github.io/ANTs/ (or alternatively, from a docker container). The 2.1.0+ binaries are known to work.
 
-The simplest way to install the rest from scratch is to use a Anaconda or virtualenv environment using Python >3.5, then
+A traditional way to install the environment from scratch is to use a Anaconda or virtualenv environment using Python >3.5, then
 * install numpy, scipy, if not installed (`conda install scipy` or `pip install scipy`)
 * install nibabel, available on pip (`pip install nibabel`)
-* install pytorch ( > 1.0.0, tested until 1.4.0 ) following the instruction of https://pytorch.org (CPU only is ok, no need for CUDA/GPU-related dependencies)
+* install pytorch ( > 1.0.0, tested until 2.4.0 ) following the instruction of https://pytorch.org (CPU only is ok, no need for CUDA/GPU-related dependencies)
 
 
 
