@@ -31,7 +31,8 @@ if you have `uv` installed:
 `parcel_t1mri.sh example_brain_t1.nii.gz`
 
 Where `example_brain_t1.nii.gz` is a 3D T1-weighted image
-Uses `parcel_t1mri.sh -h` for help
+Try `parcel_t1mri.sh -h` for help
+It is possible to symlink `parcel_t1mri.sh` anywhere in the PATH
 
 
 To setup a ANTs environment, get it from http://stnava.github.io/ANTs/ (or alternatively, from a docker container). The 2.1.0 binaries are known to work.
@@ -46,11 +47,15 @@ The simplest way to install the rest from scratch is to use a Anaconda or virtua
 ## Usage:
 After download, you can run
 
-`./test_run.sh` in the source directory to ensure the environment is ok.
+Using the old method (without uv), you can use `./test_run.sh` in the source directory to ensure the environment is ok.
 
-To use the program, simply run:
+To use the program and runs the parcellation on a third-party segmentation, simply run:
 
 `./parcel_seg.sh -a aseg example/example_segmentation_t1.nii.gz`.
+
+or, to run on a raw T1-weighted image:
+
+`parcel_t1mri.sh example_brain_t1.nii.gz`
 
 For more flexibility, the following options are available:
 
