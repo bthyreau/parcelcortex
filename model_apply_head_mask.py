@@ -224,6 +224,10 @@ for fname in sys.argv[1:]:
             if not np.allclose(img.get_sform(), img.get_qform()):
                 img._affine = img.get_qform() # simplify later ANTs compatibility
                 print("This image has an sform defined, ignoring it - work in scanner space using the qform")
+                print(" For convenience, a copy of the input with no sform was saved as ")
+                print(" " + outfilename.replace("_tiv.nii.gz", "_qform-save.nii.gz"))
+                if 1:
+                    img.to_filename(outfilename.replace("_tiv.nii.gz", "_qform-save.nii.gz"))
 
     except:
         open(fname + ".warning.txt", "a").write("can't open the file\n")
