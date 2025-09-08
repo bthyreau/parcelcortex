@@ -53,6 +53,7 @@ cd $pth
 #else
 #	echo "Reusing affine from existing file ${a}_mni0Affine.txt"
 #fi
+if [ -f ${ba%%.nii.gz}_fix3dim.nii.gz ] ; then ba=${ba%%.nii.gz}_fix3dim.nii.gz; fi
 
 # Note that the segmentation model can work with both affine and rigid registrations input
 antsApplyTransforms -i ${ba} -r ${scriptpath}/templates/igboxL.nii.gz -t ${a}_mni0Affine.txt -o ${a}_boxL.nii.gz -u float
@@ -109,5 +110,7 @@ rm b96_box128_[rl]out_${a}*.nii.gz
 # Those are the non-masked labels:
 rm Lout_${a}_*_filled.nii Rout_${a}_*_filled.nii
 #gzip -f Lout_${a}_*_filled.nii ; gzip -f Rout_${a}_*_filled.nii
-#
+# delete possible temporary files made at first step
+if [ -f "${ba%%_fix3dim.nii.gz}_fix3dim.nii.gz" ]; then /bin/rm ${ba}; fi
+
 echo "fslview $filename $pth/${a}_ribbonL.nii.gz -b 128,192 -l Red-Yellow -t 0.5 $pth/${a}_ribbonR.nii.gz" -b 128,192 -l Red-Yellow -t 0.5 $pth/${a}_labelled_aseg.nii.gz -l Random-Rainbow -t 0.8

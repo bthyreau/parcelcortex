@@ -239,6 +239,7 @@ for fname in sys.argv[1:]:
         print("Warning: this looks like a timeserie. Averaging it")
         open(fname + ".warning.txt", "a").write("dim not 3. Averaging last dimension\n")
         d = d.mean(-1)
+        nibabel.Nifti1Image(d, img.affine).to_filename(outfilename.replace("_tiv.nii.gz", "_fix3dim.nii.gz"))
 
     d = (d - d.mean()) / d.std()
 
