@@ -221,7 +221,7 @@ for fname in sys.argv[1:]:
                     if not OUTPUT_DEBUG:
                         continue
 
-            if not np.allclose(img.get_sform(), img.get_qform()):
+            if not np.allclose(img.get_sform(), img.get_qform(), atol=1e-4):
                 img._affine = img.get_qform() # simplify later ANTs compatibility
                 print("This image has an sform defined, ignoring it - work in scanner space using the qform")
                 print(" For convenience, a copy of the input with no sform was saved as ")
